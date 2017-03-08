@@ -52,6 +52,16 @@ public class HttpManager {
         sendRequest(request, requestListener);
     }
 
+    // 同步get请求
+    public Call get(String url) throws IOException {
+        Request.Builder builder = new Request.Builder().url(url);
+        return client.newCall(builder.build());
+    }
+
+    public Call get(Request request) {
+        return client.newCall(request);
+    }
+
     // 异步post请求
     public void postAsync(String url, Map<String, String> map, RequestListener requestListener) {
         Param[] params = map2Params(map);

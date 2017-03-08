@@ -5,6 +5,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
@@ -25,6 +28,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(String result) {
                 vText.setText(result);
+            }
+        });
+
+        DownloadManager.getInstance().download("", new DownloadObserver() {
+            @Override
+            public void onNext(DownloadTask task) {
+                super.onNext(task);
+
+            }
+
+            @Override
+            public void onComplete() {
+                super.onComplete();
             }
         });
 
