@@ -1,6 +1,7 @@
 package com.ider.httprequest;
 
 import android.os.Environment;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,7 +21,9 @@ import okhttp3.Response;
 
 public class DownloadManager {
 
-    private static final String CACHE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "mDownload";
+    private static final String TAG = "DownloadManager";
+
+    private static final String CACHE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "mDownload";
 
     private Map<String, Call> dlCalls;
 
@@ -66,11 +69,11 @@ public class DownloadManager {
     }
 
     private String getFileName(String url) {
-        int dotIndex = url.lastIndexOf(".");
-        if (dotIndex == -1) {
+        int index = url.lastIndexOf("/");
+        if (index == -1) {
             return url;
         } else {
-            return url.substring(0, dotIndex);
+            return url.substring(index + 1);
         }
     }
 
@@ -89,14 +92,14 @@ public class DownloadManager {
         DownloadTask realTask = new DownloadTask(task.getUrl());
         realTask.setTotal(task.getTotal());
 
-        String url = task.getUrl();
         String fileName = task.getFileName();
         long contentLength = task.getTotal();
         File file = new File(CACHE_PATH, fileName);
         int i = 1;
         // 文件存在并且已下载完成，则创建新的文件下载
+        Log.i(TAG, "createRealTask: exists/content = " + file.length() + "/" + contentLength);
         while (file.length() >= contentLength) {
-            int dotIndex = url.lastIndexOf(".");
+            int dotIndex = fileName.lastIndexOf(".");
             String newFileName;
             if (dotIndex == -1) {
                 newFileName = fileName + "(" + i + ")";
@@ -110,7 +113,6 @@ public class DownloadManager {
         }
         realTask.setFileName(file.getName());
         realTask.setProgress(file.length());
-
 
         return realTask;
     }
@@ -137,7 +139,7 @@ public class DownloadManager {
             Response response = call.execute();
             InputStream is = null;
             FileOutputStream fos = null;
-
+            Log.i(TAG, "subscribe: start download");
             try {
                 is = response.body().byteStream();
                 fos = new FileOutputStream(file, true);
@@ -167,5 +169,15 @@ public class DownloadManager {
         }
     }
 
+    public void cancel(String url) {
+        Call call = dlCalls.get(url);
+        if(call != null) {
+            call.cancel();
+        }
+
+        dlCalls.remove(url);
+
+
+    }
 
 }
